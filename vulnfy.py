@@ -4,7 +4,9 @@ def ensure_deps():
     required = {
         "requests": "requests",
         "colorama": "colorama",
-        "yaml": "PyYAML"
+        "yaml": "PyYAML",
+        "fpdf2": "fpdf2",
+        "xhtml2pdf": "xhtml2pdf"
     }
     
     for modname, pipname in required.items():
@@ -18,7 +20,7 @@ import requests, json, re, tomllib, yaml, os, sys
 import argparse
 from pathlib import Path
 from colorama import Fore, Style, init
-from utils import send_discord, send_telegram, load_config
+from utils import send_discord, send_telegram, load_config, gen_markdown, gen_html, gen_pdf, gen_csv, gen_yaml, gen_json
 
 class Vulnfy:
     def __init__(self):
@@ -436,7 +438,9 @@ def main():
     parser = argparse.ArgumentParser(description="Vulnfy - Vulns Scanner")
     parser.add_argument("-p", "--path", type=str, default=".", help="Path to the directory you want to scan (default is the current directory).")
     parser.add_argument("-o", "--output", type=str, default="security_report.json", help="Output file path for the report.")
-    parser.add_argument("--fail-on", type=str, choices=["low", "medium", "high", "critical"], default="high", help="Minimum severity for CI failure")
+    parser.add_argument("--fail-on", type=str, choices=["low", "medium", "high", "critical"], default="high", help="Minimum severity for CI failure.")
+    parser.add_argument("--format", choices=["json", "markdown", "html", "pdf", "csv", "yaml"], default="json", help="Report output format.")
+    parser.add_argument("--no-cache", action="store_true", help="Disable pycache.")
     args = parser.parse_args()
     
     trg_dir = os.path.abspath(args.path)
@@ -541,9 +545,45 @@ def main():
             if lvl >= threshold:
                 should_fail = True
                 break
+        format_exts = {
+            "json": ".json",
+            "markdown": ".md",
+            "html": ".html",
+            "pdf": ".pdf",
+            "csv": ".csv",
+            "yaml": ".yaml"
+        }
+        if args.output == "security_report.json" and args.format != "json":
+            report_f = "security_report" + format_exts.get(args.format, ".txt")
         
-        scanner.save_rep(report_f)
+        if args.format == "json":
+            content = gen_json(scanner.report)
+            with open(report_f, "w", encoding="utf-8") as f:
+                f.write(content)
+        elif args.format == "markdown":
+                content = gen_markdown(scanner.report)
+                with open(report_f, "w", encoding="utf-8") as f:
+                    f.write(content)
+        elif args.format == "html":
+            content = gen_html(scanner.report)
+            with open(report_f, "w", encoding="utf-8") as f:
+                f.write(content)
+        elif args.format == "pdf":
+            gen_pdf(scanner.report, report_f)
+        elif args.format == "csv":
+            content = gen_csv(scanner.report)
+            with open(report_f, "w", encoding="utf-8") as f:
+                f.write(content)
+        elif args.format == "yaml":
+            content = gen_yaml(scanner.report)
+            with open(report_f, "w", encoding="utf-8") as f:
+                f.write(content)
+        else:
+            scanner.save_rep(report_f)
         report_path = report_f
+        
+        if args.no_cache:
+            sys.dont_write_bytecode = True
         
         if should_fail:
             print(f"{scanner.rd}[!] {scanner.rst}CI Failed: Vulnerabilities reaching the threshold found '{args.fail_on}'.")
@@ -555,12 +595,12 @@ def main():
         if os.path.exists(report_f):
             os.remove(report_f)
         print(f"{scanner.grn}[+] {scanner.rst}No vulnerabilities found (or all were ignored). CI passed.")
-        
+    
+    
     if vuln_count > 0 and should_fail:
         sys.exit(1)
     else:
         sys.exit(0)
-
 
 if __name__ == "__main__":
     main()

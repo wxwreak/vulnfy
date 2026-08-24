@@ -4,7 +4,7 @@
 ---
 
 ## Telegram Showcase
-![telegramapi](https://github.com/wreakdev/vulnfy/blob/main/telegramapi.png)
+![telegramapi](https://github.com/wxwreak/vulnfy/blob/main/telegramapi.png)
 
 ---
 
@@ -62,8 +62,8 @@ TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 ```
 
-## Suppressing Vulnerabilites (`.vulnignore`)
-If you have vulnerabilites that you are aware of and cannot fix immediately (or want to suppress false positives), create a `.vulnignore` file in your **project's root directory.**
+## Suppressing Vulnerabilities (`.vulnignore`)
+If you have vulnerabilities that you are aware of and cannot fix immediately (or want to suppress false positives), create a `.vulnignore` file in your **project's root directory.**
 
 Add vulnerability IDs or CVEs (one per line):
 ```plaintext
@@ -71,7 +71,7 @@ Add vulnerability IDs or CVEs (one per line):
 PYSEC-2026-1474
 CVE-2024-34064
 ```
-Ignored vulnerabilites will still appearin the raw JSON report if found, but they **will not** trigger CI failures or send notifications.
+Ignored vulnerabilities will still appear in the raw JSON report if found, but they **will not** trigger CI failures or send notifications.
 
 ## CI/CD  Integration (Github Actions)
 1. Create a `vulnfy.yaml` file in your repository root (as shown above).
@@ -98,7 +98,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Vulnfy
-        run: pip install git+https://github.com/wreakdev/vulnfy.git
+        run: pip install git+https://github.com/wxwreak/vulnfy.git
 
       - name: Run Vulnfy Scanner
         env:
@@ -110,7 +110,7 @@ jobs:
 
 ## Installation
 ```bash
-curl -sSL https://github.com/wreakdev/vulnfy/blob/main/vulnfy_setup.sh | bash
+curl -sSL https://github.com/wxwreak/vulnfy/blob/main/vulnfy_setup.sh | bash
 ```
 
 ## Usage
@@ -120,3 +120,5 @@ curl -sSL https://github.com/wreakdev/vulnfy/blob/main/vulnfy_setup.sh | bash
 | `vulnfy --path <dir>` (Or `-p`) | Scans a custom directory |
 | `vulnfy --output <filename>` (Or `-o`) | Custom report file (Only json) |
 | `vulnfy --fail-on <level>` | Minimum severity to fail CI (`low`, `medium`, `high`, `critical`) |
+| `vulnfy --format <ext>`    | Formats (`json`, `markdown`, `html`, `pdf`, `csv`, `yaml`) Default is json |
+| `vulnfy --no-cache`        | Disable Disable pycache |
