@@ -2,3 +2,4 @@ structure.txt
 security_report.json
 .env
 cover.png
+/.ruff_cache
